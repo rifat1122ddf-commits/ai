@@ -1,0 +1,301 @@
+<!DOCTYPE html>
+<html lang="bn">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta http-equiv="Content-Security-Policy" content="default-src 'self'; script-src 'self' 'unsafe-inline' https://cdn.jsdelivr.net https://cdnjs.cloudflare.com; style-src 'self' 'unsafe-inline' https://fonts.googleapis.com; font-src 'self' https://fonts.gstatic.com; img-src 'self' data: blob:; connect-src 'self' https://generativelanguage.googleapis.com https://api.all-hands.dev https://*.googleapis.com; media-src 'self' blob:;">
+    <title>NEXUS AI - আপনার ব্যক্তিগত সহকারী</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Orbitron:wght@400;500;600;700;900&family=Share+Tech+Mono&family=Noto+Sans+Bengali:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="styles.css">
+</head>
+<body>
+    <div id="app">
+        <!-- Matrix Rain Background -->
+        <canvas id="matrix-bg"></canvas>
+        
+        <!-- Scan Line Effect -->
+        <div class="scanlines"></div>
+        
+        <!-- Main Container -->
+        <div class="main-container">
+            <!-- Header -->
+            <header class="header">
+                <div class="logo">
+                    <span class="logo-icon">◈</span>
+                    <span class="logo-text">NEXUS</span>
+                    <span class="logo-ai">AI</span>
+                </div>
+                <div class="header-status">
+                    <div class="status-indicator" id="statusIndicator">
+                        <span class="status-dot"></span>
+                        <span class="status-text" id="statusText">প্রস্তুত</span>
+                    </div>
+                    <div class="datetime" id="datetime"></div>
+                </div>
+                <div class="window-controls">
+                    <button class="win-btn minimize" onclick="window.nexusAI?.minimizeWindow()">─</button>
+                    <button class="win-btn maximize" onclick="window.nexusAI?.maximizeWindow()">□</button>
+                    <button class="win-btn close" onclick="window.nexusAI?.closeWindow()">✕</button>
+                </div>
+            </header>
+
+            <!-- Content Area -->
+            <div class="content-area">
+                <!-- Left Panel - Action Log -->
+                <div class="panel left-panel">
+                    <div class="panel-header">
+                        <span class="panel-icon">⚡</span>
+                        <span>অ্যাকশন লগ</span>
+                    </div>
+                    <div class="panel-content" id="actionLog">
+                        <div class="log-entry system">
+                            <span class="log-time">--:--:--</span>
+                            <span class="log-text">সিস্টেম চালু হয়েছে...</span>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Center - AI Orb -->
+                <div class="center-section">
+                    <!-- Face Recognition Camera -->
+                    <div class="face-camera-container" id="faceCameraContainer">
+                        <video id="faceCamera" autoplay playsinline></video>
+                        <canvas id="faceCanvas"></canvas>
+                        <div class="face-overlay" id="faceOverlay">
+                            <span id="faceStatus">ক্যামেরা লোড হচ্ছে...</span>
+                        </div>
+                    </div>
+
+                    <!-- The Main Orb -->
+                    <div class="orb-container" id="orbContainer">
+                        <div class="orb">
+                            <div class="orb-inner">
+                                <div class="orb-core"></div>
+                                <div class="orb-ring ring-1"></div>
+                                <div class="orb-ring ring-2"></div>
+                                <div class="orb-ring ring-3"></div>
+                                <div class="orb-particles"></div>
+                            </div>
+                        </div>
+                        <div class="orb-glow"></div>
+                        <div class="orb-shadow"></div>
+                    </div>
+
+                    <!-- Wake Word Indicator -->
+                    <div class="wake-indicator" id="wakeIndicator">
+                        <span>শুনছি...</span>
+                    </div>
+                </div>
+
+                <!-- Right Panel - Response Log -->
+                <div class="panel right-panel">
+                    <div class="panel-header">
+                        <span class="panel-icon">💬</span>
+                        <span>আলোচনা</span>
+                    </div>
+                    <div class="panel-content" id="responseLog">
+                        <div class="log-entry system">
+                            <span class="log-time">--:--:--</span>
+                            <span class="log-text">AI সহকারী প্রস্তুত...</span>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Bottom Section -->
+            <div class="bottom-section">
+                <!-- Audio Visualizer -->
+                <div class="audio-section">
+                    <div class="audio-label">অডিও ইনপুট</div>
+                    <div class="audio-visualizer" id="audioVisualizer">
+                        <div class="audio-bar"></div>
+                        <div class="audio-bar"></div>
+                        <div class="audio-bar"></div>
+                        <div class="audio-bar"></div>
+                        <div class="audio-bar"></div>
+                        <div class="audio-bar"></div>
+                        <div class="audio-bar"></div>
+                        <div class="audio-bar"></div>
+                        <div class="audio-bar"></div>
+                        <div class="audio-bar"></div>
+                        <div class="audio-bar"></div>
+                        <div class="audio-bar"></div>
+                        <div class="audio-bar"></div>
+                        <div class="audio-bar"></div>
+                        <div class="audio-bar"></div>
+                    </div>
+                    <div class="volume-control">
+                        <span class="volume-icon">🔊</span>
+                        <input type="range" id="volumeSlider" min="0" max="100" value="80">
+                        <span class="volume-value" id="volumeValue">80%</span>
+                    </div>
+                </div>
+
+                <!-- Control Buttons -->
+                <div class="control-buttons">
+                    <button class="ctrl-btn listen-btn" id="listenBtn" onclick="toggleListening()">
+                        <span class="btn-icon">🎤</span>
+                        <span class="btn-text">শুনুন</span>
+                    </button>
+                    <button class="ctrl-btn screen-btn" id="screenBtn" onclick="captureScreen()">
+                        <span class="btn-icon">📸</span>
+                        <span class="btn-text">স্ক্রিন</span>
+                    </button>
+                    <button class="ctrl-btn settings-btn" id="settingsBtn" onclick="openSettings()">
+                        <span class="btn-icon">⚙️</span>
+                        <span class="btn-text">সেটিংস</span>
+                    </button>
+                </div>
+
+                <!-- Status Bar -->
+                <div class="status-bar">
+                    <div class="status-item">
+                        <span class="status-label">CPU:</span>
+                        <span class="status-value" id="cpuStatus">--</span>
+                    </div>
+                    <div class="status-item">
+                        <span class="status-label">মেমোরি:</span>
+                        <span class="status-value" id="memStatus">--</span>
+                    </div>
+                    <div class="status-item">
+                        <span class="status-label">নেটওয়ার্ক:</span>
+                        <span class="status-value" id="netStatus">সক্রিয়</span>
+                    </div>
+                    <div class="status-item">
+                        <span class="status-label">AI:</span>
+                        <span class="status-value" id="aiStatus">জেমিনি</span>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Settings Modal -->
+        <div class="modal" id="settingsModal">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h2>সেটিংস</h2>
+                    <button class="modal-close" onclick="closeSettings()">✕</button>
+                </div>
+                <div class="modal-body">
+                    <div class="setting-group">
+                        <label>জেমিনি API কী</label>
+                        <input type="password" id="geminiApiKey" placeholder="AIza...">
+                    </div>
+                    <div class="setting-group">
+                        <label>ওয়েক ওয়ার্ড</label>
+                        <input type="text" id="wakeWord" value="হ্যালো নেক্সাস" placeholder="হ্যালো নেক্সাস">
+                    </div>
+                    <div class="setting-group">
+                        <label>ভাষা</label>
+                        <select id="languageSelect">
+                            <option value="bn-BD" selected>বাংলা</option>
+                            <option value="en-US">English</option>
+                        </select>
+                    </div>
+                    <div class="setting-group">
+                        <label>আউটপুট ভাষা</label>
+                        <select id="outputLangSelect">
+                            <option value="bn" selected>বাংলা</option>
+                            <option value="en">English</option>
+                        </select>
+                    </div>
+                    <div class="setting-group">
+                        <label>ক্যামেরা</label>
+                        <select id="cameraSelect">
+                            <option value="">নির্বাচন করুন</option>
+                        </select>
+                    </div>
+                    <div class="setting-group">
+                        <label>
+                            <input type="checkbox" id="faceRecogToggle" checked>
+                            চেহারা চিনতে পারা
+                        </label>
+                    </div>
+                    <div class="setting-group">
+                        <label>
+                            <input type="checkbox" id="screenCaptureToggle" checked>
+                            স্ক্রিন দেখতে পারা
+                        </label>
+                    </div>
+                    <div class="setting-group">
+                        <label>
+                            <input type="checkbox" id="autoListenToggle">
+                            স্বয়ংক্রিয় শোনা
+                        </label>
+                    </div>
+                </div>
+                <div class="modal-footer">
+                    <button class="btn-save" onclick="saveSettings()">সেভ করুন</button>
+                </div>
+            </div>
+        </div>
+
+        <!-- Screen Capture Modal -->
+        <div class="modal" id="screenModal">
+            <div class="modal-content modal-large">
+                <div class="modal-header">
+                    <h2>স্ক্রিন দেখছি</h2>
+                    <button class="modal-close" onclick="closeScreenModal()">✕</button>
+                </div>
+                <div class="modal-body">
+                    <canvas id="screenCanvas"></canvas>
+                    <div class="screen-controls">
+                        <button onclick="screenAction('click')">ক্লিক করুন</button>
+                        <button onclick="screenAction('doubleclick')">ডাবল ক্লিক</button>
+                        <button onclick="screenAction('rightclick')">রাইট ক্লিক</button>
+                        <input type="text" id="typeInput" placeholder="টাইপ করতে লিখুন...">
+                        <button onclick="screenAction('type')">টাইপ</button>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Notification -->
+        <div class="notification" id="notification">
+            <span id="notificationText"></span>
+        </div>
+    </div>
+
+    <!-- Scripts -->
+    <script src="config.js"></script>
+    <script src="utils/constants.js"></script>
+    <script src="utils/helpers.js"></script>
+    <script src="utils/logger.js"></script>
+    <script src="utils/storage.js"></script>
+    <script src="utils/events.js"></script>
+    <script src="utils/history.js"></script>
+    <script src="utils/session.js"></script>
+    <script src="utils/theme.js"></script>
+    <script src="utils/performance.js"></script>
+    <script src="utils/network.js"></script>
+    <script src="utils/notifications.js"></script>
+    <script src="utils/animations.js"></script>
+    <script src="utils/speech-manager.js"></script>
+    <script src="utils/tts-manager.js"></script>
+    <script src="utils/validator.js"></script>
+    <script src="utils/cache.js"></script>
+    <script src="utils/prompts.js"></script>
+    <script src="utils/debug.js"></script>
+    <script src="utils/api.js"></script>
+    <script src="utils/context.js"></script>
+    <script src="utils/vad.js"></script>
+    <script src="utils/security.js"></script>
+    <script src="utils/state.js"></script>
+    <script src="utils/locale.js"></script>
+    <script src="utils/types.js"></script>
+    <script src="utils/version.js"></script>
+    <script src="ai-core.js"></script>
+    <script src="voice-recognition.js"></script>
+    <script src="voice-synthesis.js"></script>
+    <script src="face-recognition.js"></script>
+    <script src="screen-capture.js"></script>
+    <script src="automation.js"></script>
+    <script src="commands.js"></script>
+    <script src="keyboard-shortcuts.js"></script>
+    <script src="components/orb.js"></script>
+    <script src="components/audio-visualizer.js"></script>
+    <script src="app.js"></script>
+</body>
+</html>
