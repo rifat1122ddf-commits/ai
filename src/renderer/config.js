@@ -4,8 +4,8 @@
  */
 
 const Config = {
-    // Gemini API
-    apiKey: localStorage.getItem('geminiApiKey') || '',
+    // Gemini API - প্রদত্ত API Key
+    apiKey: 'AIzaSyAb8RN6LckFne4zHemjwbBhZtwAfKhLAgols',
     apiUrl: 'https://generativelanguage.googleapis.com/v1beta/models/gemini-2.0-flash:generateContent',
     
     // Voice Settings
@@ -17,12 +17,15 @@ const Config = {
         synthesisLang: 'bn-BD'
     },
     
-    // AI Personality
+    // AI Personality - কখনো AI বলবে না
     personality: {
         name: 'নেক্সাস',
-        greeting: 'হ্যালো! আমি নেক্সাস, আপনার ব্যক্তিগত AI সহকারী। কিভাবে সাহায্য করতে পারি?',
+        realName: 'আমি নেক্সাস, তোমার ব্যক্তিগত সহকারী',
+        greeting: 'হ্যালো! আমি নেক্সাস, তোমার ব্যক্তিগত সহকারী। কিভাবে সাহায্য করতে পারি তোমার?',
         alwaysListen: false,
-        respondInBengali: true
+        respondInBengali: true,
+        isHuman: true, // নিজেকে মানুষ মনে করে
+        neverMentionAI: true
     },
     
     // Screen Capture
