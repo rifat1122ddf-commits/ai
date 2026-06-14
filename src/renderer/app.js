@@ -162,18 +162,58 @@ function buildPrompt(userInput) {
 নেক্সাস:`;
 }
 
-// Speak Text
+// Speak Text - Live Voice Chat
 async function speak(text) {
-    if (window.voiceSynthesis) {
-        AppState.isSpeaking = true;
-        const audioVisualizer = document.getElementById('audioVisualizer');
-        if (audioVisualizer) audioVisualizer.classList.add('active');
-        
-        await window.voiceSynthesis.speak(text);
-        
-        AppState.isSpeaking = false;
-        if (audioVisualizer) audioVisualizer.classList.remove('active');
+    if (!text || text.trim() === '') return;
+    
+    AppState.isSpeaking = true;
+    const audioVisualizer = document.getElementById('audioVisualizer');
+    if (audioVisualizer) audioVisualizer.classList.add('active');
+    
+    // Show speaking indicator
+    const chatArea = document.getElementById('chatArea');
+    if (chatArea) {
+        const speakingDiv = document.createElement('div');
+        speakingDiv.className = 'speaking-message';
+        speakingDiv.innerHTML = `
+            <div class="message-sender">নেক্সাস</div>
+            <div class="message-text speaking">${text}</div>
+        `;
+        chatArea.appendChild(speakingDiv);
+        chatArea.scrollTop = chatArea.scrollHeight;
     }
+    
+    // Use voice synthesis
+    if (window.voiceSynthesis) {
+        await window.voiceSynthesis.speak(text);
+    } else if (window.speechSynthesis) {
+        const utterance = new SpeechSynthesisUtterance(text);
+        utterance.lang = 'bn-BD';
+        utterance.rate = 0.95;
+        utterance.pitch = 1.0;
+        
+        // Select Bengali voice
+        const voices = speechSynthesis.getVoices();
+        const bengaliVoice = voices.find(v => 
+            v.lang.includes('bn') || v.name.includes('Bangla') || v.name.includes('Bengali')
+        );
+        if (bengaliVoice) utterance.voice = bengaliVoice;
+        
+        await new Promise((resolve) => {
+            utterance.onend = resolve;
+            utterance.onerror = resolve;
+            speechSynthesis.speak(utterance);
+        });
+    }
+    
+    // Remove speaking indicator
+    const speakingMsg = chatArea?.querySelector('.speaking-message');
+    if (speakingMsg) {
+        speakingMsg.classList.remove('speaking');
+    }
+    
+    AppState.isSpeaking = false;
+    if (audioVisualizer) audioVisualizer.classList.remove('active');
 }
 
 // Add Log Entry
