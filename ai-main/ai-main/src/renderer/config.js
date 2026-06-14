@@ -1,12 +1,50 @@
 /**
  * NEXUS AI - Configuration
- * কনফিগারেশন সেটিংস
+ * কনফিগারেশন সেটিংস - সিকিউর API Key
  */
 
 const Config = {
-    // Gemini API - প্রদত্ত API Key
-    apiKey: 'AIzaSyAb8RN6LckFne4zHemjwbBhZtwAfKhLAgols',
-    apiUrl: 'https://generativelanguage.googleapis.com/v1beta/models/gemini-2.0-flash:generateContent',
+    // Gemini API - API Key Environment থেকে বা localStorage থেকে লোড হবে
+    // ⚠️ কখনো কোডে সরাসরি API Key রাখবেন না!
+    _apiKey: null,
+    _apiUrl: 'https://generativelanguage.googleapis.com/v1beta/models/gemini-2.0-flash:generateContent',
+    
+    // API Key গেট/সেট - সিকিউর ওয়ে
+    get apiKey() {
+        if (this._apiKey) return this._apiKey;
+        // localStorage থেকে লোড করুন
+        this._apiKey = localStorage.getItem('nexus_api_key');
+        return this._apiKey;
+    },
+    
+    set apiKey(value) {
+        this._apiKey = value;
+        if (value) {
+            localStorage.setItem('nexus_api_key', value);
+        } else {
+            localStorage.removeItem('nexus_api_key');
+        }
+    },
+    
+    get apiUrl() {
+        return this._apiUrl;
+    },
+    
+    // API Key সেট করার সহজ ফাংশন
+    setApiKey(key) {
+        if (!key || key.trim() === '') {
+            console.warn('[Config] Empty API key provided');
+            return false;
+        }
+        this.apiKey = key.trim();
+        console.log('[Config] API key saved securely');
+        return true;
+    },
+    
+    // API Key আছে কিনা চেক করুন
+    hasApiKey() {
+        return !!(this.apiKey && this.apiKey.length > 10);
+    },
     
     // Voice Settings
     voice: {
