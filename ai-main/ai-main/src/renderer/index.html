@@ -252,7 +252,11 @@
     <script src="automation.js"></script>
     <script src="screen-capture.js"></script>
     
-    // Scripts - Additional Features (Previously Not Connected)
+    <!-- Scripts - Components (Previously Not Connected) -->
+    <script src="components/orb.js"></script>
+    <script src="components/audio-visualizer.js"></script>
+    
+    <!-- Scripts - Additional Features -->
     <script src="database-manager.js"></script>
     <script src="face-recognition.js"></script>
     <script src="keyboard-shortcuts.js"></script>
@@ -260,13 +264,13 @@
     <script src="commands.js"></script>
     <script src="notification-system.js"></script>
     
-    // Scripts - Phone & Device Connections
+    <!-- Scripts - Phone & Device Connections -->
     <script src="phone-connection.js"></script>
     <script src="notification-bridge.js"></script>
     <script src="task-scheduler.js"></script>
     <script src="integrations.js"></script>
     
-    // Scripts - Utility Modules
+    <!-- Scripts - Utility Modules -->
     <script src="utils/logger.js"></script>
     <script src="utils/notifications.js"></script>
     <script src="utils/history.js"></script>
@@ -292,50 +296,24 @@
     <script src="utils/network.js"></script>
     <script src="utils/vad.js"></script>
     <script src="utils/animations.js"></script>
+    <script src="utils/live-voice.js"></script>
+    <script src="utils/types.js"></script>
     
-    // Scripts - Model Maker
+    <!-- Scripts - Model Maker -->
     <script src="model-maker/model-maker.js"></script>
+    <script src="model-maker/index.js"></script>
     <script src="model-maker/css-generator/css-generator.js"></script>
     <script src="model-maker/html-generator/html-generator.js"></script>
     <script src="model-maker/js-generator/js-generator.js"></script>
     <script src="model-maker/cpp-generator/cpp-generator.js"></script>
     
-    // Scripts - Live Voice
-    <script src="utils/live-voice.js"></script>
-    
-    // Scripts - Main App
+    <!-- Scripts - Main App -->
     <script src="app.js"></script>
     
-    // Initialize all modules
+    <!-- Initialize all modules -->
     <script>
-        // Initialize Phone Connection
-        if (window.phoneConnection) {
-            window.phoneConnection.init().catch(console.error);
-        }
-        
-        // Initialize Notification Bridge
-        if (window.notificationBridge) {
-            window.notificationBridge.init().catch(console.error);
-        }
-        
-        // Initialize Task Scheduler
-        if (window.taskScheduler) {
-            window.taskScheduler.init();
-        }
-        
-        // Initialize Integrations
-        if (window.integrations) {
-            window.integrations.init();
-        }
-        
-        // Initialize Face Recognition (if enabled)
-        if (Config.faceRecognition && Config.faceRecognition.enabled) {
-            document.addEventListener('DOMContentLoaded', () => {
-                initFaceRecognition().catch(console.error);
-            });
-        }
-        
-        console.log('[NEXUS] All modules initialized');
+        // This is handled by app.js initializeComponents()
+        console.log('[NEXUS] All script modules loaded');
     </script>
 </body>
 </html>

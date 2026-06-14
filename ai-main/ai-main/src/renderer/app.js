@@ -16,6 +16,9 @@ const AppState = {
 document.addEventListener('DOMContentLoaded', async () => {
     console.log('[NEXUS] Initializing...');
     
+    // Initialize all components
+    await initializeComponents();
+    
     // Welcome
     setTimeout(() => {
         showNotification('NEXUS AI স্বাগতম!');
@@ -27,6 +30,76 @@ document.addEventListener('DOMContentLoaded', async () => {
     
     console.log('[NEXUS] Ready');
 });
+
+// Initialize all components
+async function initializeComponents() {
+    console.log('[NEXUS] Initializing components...');
+    
+    // Initialize Orb Component
+    if (typeof OrbComponent !== 'undefined') {
+        window.orbComponent = new OrbComponent('coreClickable');
+        console.log('[NEXUS] Orb component initialized');
+    }
+    
+    // Initialize Audio Visualizer
+    if (typeof AudioVisualizer !== 'undefined') {
+        window.audioVisualizer = new AudioVisualizer('audioVisualizer');
+        console.log('[NEXUS] Audio visualizer initialized');
+    }
+    
+    // Initialize Keyboard Shortcuts
+    if (window.keyboardShortcuts) {
+        window.keyboardShortcuts.init();
+        console.log('[NEXUS] Keyboard shortcuts initialized');
+    }
+    
+    // Initialize Face Recognition
+    if (Config.faceRecognition && Config.faceRecognition.enabled) {
+        try {
+            await initFaceRecognition();
+            console.log('[NEXUS] Face recognition initialized');
+        } catch (e) {
+            console.warn('[NEXUS] Face recognition failed:', e);
+        }
+    }
+    
+    // Initialize Phone Connection
+    if (window.phoneConnection) {
+        await window.phoneConnection.init();
+        console.log('[NEXUS] Phone connection initialized');
+    }
+    
+    // Initialize Notification Bridge
+    if (window.notificationBridge) {
+        await window.notificationBridge.init();
+        console.log('[NEXUS] Notification bridge initialized');
+    }
+    
+    // Initialize Task Scheduler
+    if (window.taskScheduler) {
+        window.taskScheduler.init();
+        console.log('[NEXUS] Task scheduler initialized');
+    }
+    
+    // Initialize Integrations
+    if (window.integrations) {
+        window.integrations.init();
+        console.log('[NEXUS] Integrations initialized');
+    }
+    
+    // Initialize Database
+    if (window.DatabaseManager) {
+        window.databaseManager = new DatabaseManager();
+        try {
+            await window.databaseManager.initialize();
+            console.log('[NEXUS] Database initialized');
+        } catch (e) {
+            console.warn('[NEXUS] Database initialization failed:', e);
+        }
+    }
+    
+    console.log('[NEXUS] All components initialized');
+}
 
 // Toggle Listening
 async function toggleListening() {

@@ -3,9 +3,11 @@
  * পাওয়ারফুল AI অ্যাসিস্ট্যান্ট
  */
 
-const { app, BrowserWindow, ipcMain, desktopCapturer, screen, globalShortcut, Tray, Menu, nativeImage } = require('electron');
+const { app, BrowserWindow, ipcMain, desktopCapturer, screen, globalShortcut, Tray, Menu, nativeImage, shell, clipboard, Notification } = require('electron');
 const path = require('path');
 const fs = require('fs');
+const { exec, spawn } = require('child_process');
+const os = require('os');
 const log = require('electron-log');
 
 // Configure logging
@@ -22,6 +24,10 @@ log.info('===========================================');
 let mainWindow = null;
 let tray = null;
 let isQuitting = false;
+
+// Phone connection state
+let phoneDevice = null;
+let adbPath = 'adb';
 
 // Handle uncaught exceptions
 process.on('uncaughtException', (error) => {
@@ -188,15 +194,9 @@ async function getSources() {
     }
 }
 
-// IPC Handlers
-ipcMain.handle('get-sources', async () => {
-    return await getSources();
-});
-
-ipcMain.handle('take-screenshot', async () => {
-    return await takeScreenshot();
-});
-
+// ==================== Screen & Display IPC ====================
+ipcMain.handle('get-sources', async () => await getSources());
+ipcMain.handle('take-screenshot', async () => await takeScreenshot());
 ipcMain.handle('capture-screen', async (event, sourceId) => {
     log.info('Capturing specific screen:', sourceId);
     try {
@@ -206,16 +206,13 @@ ipcMain.handle('capture-screen', async (event, sourceId) => {
         });
         
         const source = sources.find(s => s.id === sourceId);
-        if (source) {
-            return source.thumbnail.toDataURL();
-        }
+        if (source) return source.thumbnail.toDataURL();
         return null;
     } catch (error) {
         log.error('Screen capture error:', error);
         return null;
     }
 });
-
 ipcMain.handle('get-screen-size', () => {
     const primaryDisplay = screen.getPrimaryDisplay();
     return {
@@ -225,6 +222,7 @@ ipcMain.handle('get-screen-size', () => {
     };
 });
 
+// ==================== Mouse Control IPC ====================
 ipcMain.handle('mouse-move', async (event, x, y) => {
     log.debug('Moving mouse to:', x, y);
     try {
@@ -233,7 +231,6 @@ ipcMain.handle('mouse-move', async (event, x, y) => {
         return true;
     } catch (error) {
         log.error('Mouse move error:', error);
-        // Fallback using RobotJS
         try {
             const robot = require('robotjs');
             robot.moveMouse(parseInt(x), parseInt(y));
@@ -254,14 +251,10 @@ ipcMain.handle('mouse-click', async (event, button = 'left') => {
         return true;
     } catch (error) {
         log.error('Mouse click error:', error);
-        // Fallback using RobotJS
         try {
             const robot = require('robotjs');
-            if (button === 'right') {
-                robot.mouseClick('right');
-            } else {
-                robot.mouseClick('left');
-            }
+            if (button === 'right') robot.mouseClick('right');
+            else robot.mouseClick('left');
             return true;
         } catch (robotError) {
             log.error('RobotJS click error:', robotError);
@@ -292,6 +285,19 @@ ipcMain.handle('mouse-double-click', async () => {
     }
 });
 
+ipcMain.handle('mouse-scroll', async (event, amount) => {
+    log.debug('Mouse scroll:', amount);
+    try {
+        const robot = require('robotjs');
+        robot.scrollMouse(0, amount);
+        return true;
+    } catch (error) {
+        log.error('Mouse scroll error:', error);
+        return false;
+    }
+});
+
+// ==================== Keyboard Control IPC ====================
 ipcMain.handle('key-type', async (event, text) => {
     log.debug('Typing text:', text.substring(0, 50));
     try {
@@ -316,19 +322,11 @@ ipcMain.handle('key-press', async (event, key) => {
     try {
         const { keyboard, Key } = require('@nut-tree/nut-js');
         const keyMap = {
-            'enter': Key.Enter,
-            'tab': Key.Tab,
-            'escape': Key.Escape,
-            'backspace': Key.Backspace,
-            'delete': Key.Delete,
-            'ctrl': Key.LeftControl,
-            'alt': Key.LeftAlt,
-            'shift': Key.LeftShift,
-            'cmd': Key.LeftSuper,
-            'up': Key.Up,
-            'down': Key.Down,
-            'left': Key.Left,
-            'right': Key.Right
+            'enter': Key.Enter, 'tab': Key.Tab, 'escape': Key.Escape,
+            'backspace': Key.Backspace, 'delete': Key.Delete,
+            'ctrl': Key.LeftControl, 'alt': Key.LeftAlt, 'shift': Key.LeftShift,
+            'cmd': Key.LeftSuper, 'up': Key.Up, 'down': Key.Down,
+            'left': Key.Left, 'right': Key.Right
         };
         
         if (keyMap[key]) {
@@ -358,36 +356,43 @@ ipcMain.handle('key-combination', async (event, keys) => {
     }
 });
 
-// Window controls
+// ==================== Window Controls IPC ====================
 ipcMain.handle('minimize-window', () => {
     if (mainWindow) mainWindow.minimize();
 });
-
 ipcMain.handle('maximize-window', () => {
     if (mainWindow) {
-        if (mainWindow.isMaximized()) {
-            mainWindow.unmaximize();
-        } else {
-            mainWindow.maximize();
-        }
+        if (mainWindow.isMaximized()) mainWindow.unmaximize();
+        else mainWindow.maximize();
     }
 });
-
 ipcMain.handle('close-window', () => {
     if (mainWindow) mainWindow.hide();
 });
-
-// Get app info
-ipcMain.handle('get-app-info', () => {
-    return {
-        version: app.getVersion(),
-        name: app.getName(),
-        platform: process.platform,
-        arch: process.arch
-    };
+ipcMain.handle('set-always-on-top', (event, flag) => {
+    if (mainWindow) mainWindow.setAlwaysOnTop(flag);
 });
 
-// Read file
+// ==================== App & System Info IPC ====================
+ipcMain.handle('get-app-info', () => ({
+    version: app.getVersion(),
+    name: app.getName(),
+    platform: process.platform,
+    arch: process.arch
+}));
+
+ipcMain.handle('get-system-info', () => ({
+    platform: process.platform,
+    arch: process.arch,
+    cpus: os.cpus(),
+    totalMemory: os.totalmem(),
+    freeMemory: os.freemem(),
+    hostname: os.hostname(),
+    homedir: os.homedir(),
+    uptime: os.uptime()
+}));
+
+// ==================== File Operations IPC ====================
 ipcMain.handle('read-file', async (event, filePath) => {
     try {
         const content = fs.readFileSync(filePath, 'utf8');
@@ -398,7 +403,6 @@ ipcMain.handle('read-file', async (event, filePath) => {
     }
 });
 
-// Write file
 ipcMain.handle('write-file', async (event, filePath, content) => {
     try {
         fs.writeFileSync(filePath, content, 'utf8');
@@ -407,6 +411,317 @@ ipcMain.handle('write-file', async (event, filePath, content) => {
         log.error('Write file error:', error);
         return false;
     }
+});
+
+ipcMain.handle('delete-file', async (event, filePath) => {
+    try {
+        fs.unlinkSync(filePath);
+        return true;
+    } catch (error) {
+        log.error('Delete file error:', error);
+        return false;
+    }
+});
+
+ipcMain.handle('list-dir', async (event, dirPath) => {
+    try {
+        return fs.readdirSync(dirPath).map(name => ({
+            name,
+            isDirectory: fs.statSync(path.join(dirPath, name)).isDirectory()
+        }));
+    } catch (error) {
+        log.error('List dir error:', error);
+        return [];
+    }
+});
+
+ipcMain.handle('create-dir', async (event, dirPath) => {
+    try {
+        fs.mkdirSync(dirPath, { recursive: true });
+        return true;
+    } catch (error) {
+        log.error('Create dir error:', error);
+        return false;
+    }
+});
+
+// ==================== Phone (ADB) Connection IPC ====================
+ipcMain.handle('phone-scan-devices', async () => {
+    log.info('Scanning for Android devices...');
+    return new Promise((resolve) => {
+        exec(`${adbPath} devices`, (error, stdout) => {
+            if (error) {
+                log.error('ADB scan error:', error);
+                resolve([]);
+            } else {
+                const devices = [];
+                const lines = stdout.split('\n').filter(l => l.trim());
+                for (let i = 1; i < lines.length; i++) {
+                    const parts = lines[i].split('\t');
+                    if (parts.length >= 2) {
+                        devices.push({
+                            id: parts[0],
+                            status: parts[1].trim()
+                        });
+                    }
+                }
+                resolve(devices);
+            }
+        });
+    });
+});
+
+ipcMain.handle('phone-connect-wifi', async (event, ip, port = 5555) => {
+    log.info(`Connecting to phone at ${ip}:${port}...`);
+    return new Promise((resolve) => {
+        exec(`${adbPath} connect ${ip}:${port}`, (error, stdout) => {
+            if (error) resolve({ success: false, error: error.message });
+            else {
+                phoneDevice = `${ip}:${port}`;
+                resolve({ success: true, output: stdout });
+            }
+        });
+    });
+});
+
+ipcMain.handle('phone-disconnect', async () => {
+    if (phoneDevice) {
+        return new Promise((resolve) => {
+            exec(`${adbPath} disconnect ${phoneDevice}`, (error, stdout) => {
+                phoneDevice = null;
+                resolve({ success: !error, output: stdout });
+            });
+        });
+    }
+    return { success: true };
+});
+
+ipcMain.handle('phone-get-device-info', async () => {
+    if (!phoneDevice) return null;
+    return new Promise((resolve) => {
+        exec(`${adbPath} -s ${phoneDevice} shell getprop ro.product.model`, (error, model) => {
+            if (error) resolve(null);
+            else {
+                exec(`${adbPath} -s ${phoneDevice} shell getprop ro.build.version.release`, (err2, version) => {
+                    resolve({
+                        model: model.trim(),
+                        androidVersion: version.trim()
+                    });
+                });
+            }
+        });
+    });
+});
+
+ipcMain.handle('phone-take-screenshot', async () => {
+    if (!phoneDevice) return null;
+    return new Promise((resolve) => {
+        const localPath = path.join(app.getPath('temp'), 'phone_screenshot.png');
+        exec(`${adbPath} -s ${phoneDevice} shell screencap -p /sdcard/screenshot.png && ${adbPath} -s ${phoneDevice} pull /sdcard/screenshot.png "${localPath}"`, (error) => {
+            if (error) resolve(null);
+            else {
+                const data = fs.readFileSync(localPath);
+                fs.unlinkSync(localPath);
+                resolve(`data:image/png;base64,${data.toString('base64')}`);
+            }
+        });
+    });
+});
+
+ipcMain.handle('phone-open-app', async (event, packageName) => {
+    if (!phoneDevice) return false;
+    return new Promise((resolve) => {
+        exec(`${adbPath} -s ${phoneDevice} shell monkey -p ${packageName} -c android.intent.category.LAUNCHER 1`, (error) => {
+            resolve(!error);
+        });
+    });
+});
+
+ipcMain.handle('phone-send-text', async (event, text) => {
+    if (!phoneDevice) return false;
+    return new Promise((resolve) => {
+        exec(`${adbPath} -s ${phoneDevice} shell input text "${text.replace(/"/g, '\\"')}"`, (error) => {
+            resolve(!error);
+        });
+    });
+});
+
+ipcMain.handle('phone-tap', async (event, x, y) => {
+    if (!phoneDevice) return false;
+    return new Promise((resolve) => {
+        exec(`${adbPath} -s ${phoneDevice} shell input tap ${x} ${y}`, (error) => {
+            resolve(!error);
+        });
+    });
+});
+
+ipcMain.handle('phone-swipe', async (event, x1, y1, x2, y2) => {
+    if (!phoneDevice) return false;
+    return new Promise((resolve) => {
+        exec(`${adbPath} -s ${phoneDevice} shell input swipe ${x1} ${y1} ${x2} ${y2}`, (error) => {
+            resolve(!error);
+        });
+    });
+});
+
+ipcMain.handle('phone-get-apps', async () => {
+    if (!phoneDevice) return [];
+    return new Promise((resolve) => {
+        exec(`${adbPath} -s ${phoneDevice} shell pm list packages`, (error, stdout) => {
+            if (error) resolve([]);
+            else {
+                const apps = stdout.split('\n')
+                    .filter(l => l.includes('package:'))
+                    .map(l => l.replace('package:', '').trim());
+                resolve(apps);
+            }
+        });
+    });
+});
+
+ipcMain.handle('phone-get-battery', async () => {
+    if (!phoneDevice) return null;
+    return new Promise((resolve) => {
+        exec(`${adbPath} -s ${phoneDevice} shell dumpsys battery`, (error, stdout) => {
+            if (error) resolve(null);
+            else {
+                const level = stdout.match(/level:\s*(\d+)/)?.[1] || 0;
+                const status = stdout.match(/status:\s*(\d+)/)?.[1] || 0;
+                resolve({ level: parseInt(level), status: parseInt(status) });
+            }
+        });
+    });
+});
+
+ipcMain.handle('phone-exec-command', async (event, cmd) => {
+    if (!phoneDevice) return { success: false, error: 'No device connected' };
+    return new Promise((resolve) => {
+        exec(`${adbPath} -s ${phoneDevice} shell "${cmd}"`, (error, stdout, stderr) => {
+            resolve({ success: !error, output: stdout, error: stderr });
+        });
+    });
+});
+
+// ==================== System Operations IPC ====================
+ipcMain.handle('system-open-external', async (event, url) => {
+    await shell.openExternal(url);
+    return true;
+});
+
+ipcMain.handle('system-open-path', async (event, filePath) => {
+    await shell.openPath(filePath);
+    return true;
+});
+
+ipcMain.handle('system-get-clipboard', () => clipboard.readText());
+ipcMain.handle('system-set-clipboard', (event, text) => {
+    clipboard.writeText(text);
+    return true;
+});
+
+ipcMain.handle('system-show-notification', (event, title, body) => {
+    new Notification({ title, body }).show();
+    return true;
+});
+
+ipcMain.handle('system-get-cpu-usage', () => {
+    const cpus = os.cpus();
+    let totalIdle = 0, totalTick = 0;
+    cpus.forEach(cpu => {
+        for (let type in cpu.times) totalTick += cpu.times[type];
+        totalIdle += cpu.times.idle;
+    });
+    return {
+        idle: totalIdle / cpus.length,
+        total: totalTick / cpus.length,
+        usage: ((1 - totalIdle / totalTick) * 100).toFixed(1)
+    };
+});
+
+ipcMain.handle('system-get-memory-usage', () => ({
+    total: os.totalmem(),
+    free: os.freemem(),
+    used: os.totalmem() - os.freemem(),
+    percentage: (((os.totalmem() - os.freemem()) / os.totalmem()) * 100).toFixed(1)
+}));
+
+ipcMain.handle('system-open-app', async (event, appPath) => {
+    return new Promise((resolve) => {
+        spawn(appPath, [], { detached: true, shell: true });
+        resolve(true);
+    });
+});
+
+// ==================== GitHub Integration IPC ====================
+ipcMain.handle('github-get-repos', async (event, token) => {
+    try {
+        const response = await fetch('https://api.github.com/user/repos', {
+            headers: { 'Authorization': `token ${token}` }
+        });
+        return await response.json();
+    } catch (error) {
+        log.error('GitHub repos error:', error);
+        return [];
+    }
+});
+
+ipcMain.handle('github-create-issue', async (event, token, owner, repo, title, body) => {
+    try {
+        const response = await fetch(`https://api.github.com/repos/${owner}/${repo}/issues`, {
+            method: 'POST',
+            headers: {
+                'Authorization': `token ${token}`,
+                'Content-Type': 'application/json'
+            },
+            body: JSON.stringify({ title, body })
+        });
+        return await response.json();
+    } catch (error) {
+        log.error('GitHub issue error:', error);
+        return { error: error.message };
+    }
+});
+
+// ==================== Weather Integration IPC ====================
+ipcMain.handle('weather-get-current', async (event, city, apiKey) => {
+    try {
+        const response = await fetch(
+            `https://api.openweathermap.org/data/2.5/weather?q=${city}&appid=${apiKey}&units=metric`
+        );
+        return await response.json();
+    } catch (error) {
+        log.error('Weather error:', error);
+        return null;
+    }
+});
+
+ipcMain.handle('weather-get-forecast', async (event, city, days, apiKey) => {
+    try {
+        const response = await fetch(
+            `https://api.openweathermap.org/data/2.5/forecast?q=${city}&appid=${apiKey}&units=metric`
+        );
+        return await response.json();
+    } catch (error) {
+        log.error('Forecast error:', error);
+        return null;
+    }
+});
+
+// ==================== Currency Integration IPC ====================
+ipcMain.handle('currency-get-rate', async (event, from, to, apiKey) => {
+    try {
+        const response = await fetch(`https://v6.exchangerate-api.com/v6/${apiKey}/latest/${from}`);
+        const data = await response.json();
+        return { from, to, rate: data.conversion_rates?.[to] };
+    } catch (error) {
+        log.error('Currency rate error:', error);
+        return null;
+    }
+});
+
+ipcMain.handle('currency-convert', async (event, amount, from, to, apiKey) => {
+    const rate = await ipcMain.handle('currency-get-rate', null, from, to, apiKey);
+    return rate ? amount * rate.rate : null;
 });
 
 // App lifecycle
@@ -418,9 +733,8 @@ app.whenReady().then(() => {
     // Register global shortcuts
     globalShortcut.register('CommandOrControl+Shift+N', () => {
         if (mainWindow) {
-            if (mainWindow.isVisible()) {
-                mainWindow.hide();
-            } else {
+            if (mainWindow.isVisible()) mainWindow.hide();
+            else {
                 mainWindow.show();
                 mainWindow.focus();
             }
@@ -431,15 +745,11 @@ app.whenReady().then(() => {
 });
 
 app.on('window-all-closed', () => {
-    if (process.platform !== 'darwin') {
-        app.quit();
-    }
+    if (process.platform !== 'darwin') app.quit();
 });
 
 app.on('activate', () => {
-    if (BrowserWindow.getAllWindows().length === 0) {
-        createWindow();
-    }
+    if (BrowserWindow.getAllWindows().length === 0) createWindow();
 });
 
 app.on('before-quit', () => {
