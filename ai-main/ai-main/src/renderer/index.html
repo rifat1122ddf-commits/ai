@@ -105,18 +105,51 @@
                     </div>
                 </div>
 
-                <!-- Right Panel - Discussion -->
+                <!-- Right Panel - Discussion / Chat -->
                 <div class="glass-panel right-panel">
                     <div class="panel-header">
                         <span class="panel-icon">💬</span>
-                        <span class="panel-title">আলোচনা</span>
+                        <span class="panel-title">চ্যাট</span>
+                        <div class="language-selector">
+                            <select id="chatLanguageSelect" onchange="changeChatLanguage(this.value)">
+                                <option value="bn-BD">🇧🇩 বাংলা</option>
+                                <option value="en-US">🇺🇸 English</option>
+                                <option value="hi-IN">🇮🇳 हिन्दी</option>
+                                <option value="ar-SA">🇸🇦 العربية</option>
+                                <option value="zh-CN">🇨🇳 中文</option>
+                                <option value="es-ES">🇪🇸 Español</option>
+                                <option value="fr-FR">🇫🇷 Français</option>
+                                <option value="de-DE">🇩🇪 Deutsch</option>
+                                <option value="ja-JP">🇯🇵 日本語</option>
+                                <option value="ko-KR">🇰🇷 한국어</option>
+                                <option value="ru-RU">🇷🇺 Русский</option>
+                                <option value="pt-BR">🇧🇷 Português</option>
+                                <option value="it-IT">🇮🇹 Italiano</option>
+                                <option value="tr-TR">🇹🇷 Türkçe</option>
+                            </select>
+                        </div>
                     </div>
                     <div class="chat-area" id="chatArea">
                         <div class="chat-message ai">
-                            <div class="message-sender">AI সহকর্মী</div>
-                            <div class="message-text">হ্যালো! আমি নেক্সাস, তোমার ব্যক্তিগত সহকারী। কিভাবে সাহায্য করতে পারি তোমার?</div>
+                            <div class="message-sender">🤖 NEXUS AI</div>
+                            <div class="message-text">হ্যালো! আমি নেক্সাস। যেকোনো ভাষায় কথা বলো! 🌍</div>
                         </div>
                     </div>
+                    
+                    <!-- Chat Input Area -->
+                    <div class="chat-input-area">
+                        <div class="input-tools">
+                            <button class="tool-btn" onclick="generateImage()" title="🖼️ Image">🖼️</button>
+                            <button class="tool-btn" onclick="generatePDF()" title="📄 PDF">📄</button>
+                            <button class="tool-btn" onclick="generateCode()" title="💻 Code">💻</button>
+                            <button class="tool-btn" onclick="translateText()" title="🌐 Translate">🌐</button>
+                        </div>
+                        <div class="input-wrapper">
+                            <input type="text" id="chatInput" placeholder="মেসেজ লিখুন..." onkeypress="handleChatKeyPress(event)">
+                            <button class="send-btn" onclick="sendChatMessage()">➤</button>
+                        </div>
+                    </div>
+                    
                     <div class="telemetry-bar">
                         <div class="telemetry-item">
                             <span class="telemetry-label">নেটওয়ার্ক</span>
