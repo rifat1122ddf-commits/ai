@@ -31,7 +31,19 @@ class NEXUSKnowledgeBase {
             'medicine',         // মেডিসিন
             'technology',       // প্রযুক্তি
             'general',          // আইন, অর্থনীতি, রান্না, খেলা
-            'conversation'      // কথোপকথন
+            'conversation',     // কথোপকথন
+            
+            // নতুন যোগ করা ক্যাটাগরি
+            'symbols_and_tokens',           // টোকেন ও সিম্বল ডিকশনারি
+            'core_syntax_rules',            // কোর সিনট্যাক্স রুলস
+            'data_types_structures',        // ডেটা টাইপ ও স্ট্রাকচার
+            'reserved_keywords',            // রিজার্ভড কীওয়ার্ড
+            'advanced_values_symbols',      // অ্যাডভান্সড ভ্যালু ও সিম্বল
+            'control_flow_graph',           // কন্ট্রোল ফ্লো ও এক্সিকিউশন গ্রাফ
+            'advanced_conversational_intents', // অ্যাডভান্সড কথোপকথন ইন্টেন্ট
+            'universal_domain_knowledge',   // ইউনিভার্সাল ডোমেইন নলেজ
+            'universal_intelligence',       // ইউনিভার্সাল হিউম্যান অ্যান্ড সিস্টেম ইন্টেলিজেন্স
+            'free_dom_infinity'             // ফ্রিডম ইনফিনিটি
         ];
         
         this.loadKnowledge();
@@ -52,7 +64,19 @@ class NEXUSKnowledgeBase {
                 medicine: await this.loadJSON('knowledge/data/medicine.json'),
                 technology: await this.loadJSON('knowledge/data/technology.json'),
                 general: await this.loadJSON('knowledge/data/general.json'),
-                conversation: await this.loadJSON('knowledge/data/conversation.json')
+                conversation: await this.loadJSON('knowledge/data/conversation.json'),
+                
+                // নতুন যোগ করা ডেটা ফাইল
+                symbols_and_tokens: await this.loadJSON('knowledge/data/symbols_and_tokens_dictionary.json'),
+                core_syntax_rules: await this.loadJSON('knowledge/data/core_syntax_rules.json'),
+                data_types_structures: await this.loadJSON('knowledge/data/data_types_and_structures_registry.json'),
+                reserved_keywords: await this.loadJSON('knowledge/data/reserved_keywords_map.json'),
+                advanced_values_symbols: await this.loadJSON('knowledge/data/advanced_values_and_compounded_symbols.json'),
+                control_flow_graph: await this.loadJSON('knowledge/data/control_flow_and_execution_graph.json'),
+                advanced_conversational_intents: await this.loadJSON('knowledge/data/advanced_conversational_intents_and_psychology.json'),
+                universal_domain_knowledge: await this.loadJSON('knowledge/data/universal_domain_knowledge_base.json'),
+                universal_intelligence: await this.loadJSON('knowledge/data/universal_human_and_system_intelligence.json'),
+                free_dom_infinity: await this.loadJSON('knowledge/data/FREE_DOM_INFINITY.json')
             };
         } catch (e) {
             console.warn('[NEXUS] JSON লোড সমস্যা, embedded data ব্যবহার করছি...');
@@ -66,7 +90,19 @@ class NEXUSKnowledgeBase {
                 medicine: this.getEmbeddedMedicine(),
                 technology: this.getEmbeddedTechnology(),
                 general: this.getEmbeddedGeneral(),
-                conversation: this.getEmbeddedConversation()
+                conversation: this.getEmbeddedConversation(),
+                
+                // নতুন ক্যাটাগরির জন্য ফলব্যাক
+                symbols_and_tokens: this.getEmbeddedSymbolsTokens(),
+                core_syntax_rules: this.getEmbeddedCoreSyntax(),
+                data_types_structures: this.getEmbeddedDataTypes(),
+                reserved_keywords: this.getEmbeddedReservedKeywords(),
+                advanced_values_symbols: this.getEmbeddedAdvancedValues(),
+                control_flow_graph: this.getEmbeddedControlFlow(),
+                advanced_conversational_intents: this.getEmbeddedConversationalIntents(),
+                universal_domain_knowledge: this.getEmbeddedUniversalDomain(),
+                universal_intelligence: this.getEmbeddedUniversalIntelligence(),
+                free_dom_infinity: this.getEmbeddedFreeDomInfinity()
             };
         }
         
@@ -74,6 +110,112 @@ class NEXUSKnowledgeBase {
         this.initialized = true;
         console.log('[NEXUS Knowledge] ✅ মস্তিষ্ক লোড হয়েছে!');
         console.log('[NEXUS Knowledge] 📊 মোট বিভাগ:', Object.keys(this.knowledge).length);
+        
+        // Neural Network এবং Smart Learning এ কানেক্ট করো
+        this.connectToNeuralNetwork();
+    }
+    
+    // Neural Network এবং Smart Learning সিস্টেমে কানেক্ট করা
+    connectToNeuralNetwork() {
+        console.log('[NEXUS Knowledge] 🔗 Neural Network এবং Learning Pipeline এ কানেক্ট হচ্ছে...');
+        
+        // Smart Learning System এ কানেক্ট
+        if (window.smartLearning) {
+            // জ্ঞান থেকে প্যাটার্ন শিখো
+            for (const [category, data] of Object.entries(this.knowledge)) {
+                if (data && typeof data === 'object') {
+                    this.extractPatternsFromData(category, data);
+                }
+            }
+            console.log('[NEXUS Knowledge] ✅ Smart Learning সিস্টেমে কানেক্টেড');
+        }
+        
+        // NEXUS Neural Network Core এ কানেক্ট
+        if (window.NEXUSCore) {
+            // জ্ঞানকে নিউরাল নেটওয়ার্কের জন্য প্রস্তুত করো
+            const neuralData = this.prepareDataForNeuralNetwork();
+            window.NEXUSCore.setKnowledgeBase(neuralData);
+            console.log('[NEXUS Knowledge] ✅ NEXUS Neural Network Core এ কানেক্টেড');
+        }
+        
+        // Transaction Pipeline এ কানেক্ট
+        if (window.transactionPipeline) {
+            window.transactionPipeline.registerStage('knowledge-process', {
+                handler: async (data) => {
+                    data.knowledgeContext = this.search(data.input || '');
+                    return data;
+                },
+                dependencies: ['parse'],
+                priority: 3
+            });
+            console.log('[NEXUS Knowledge] ✅ Transaction Pipeline এ কানেক্টেড');
+        }
+        
+        console.log('[NEXUS Knowledge] ✅ সব সিস্টেমে কানেক্ট হয়েছে!');
+    }
+    
+    // ডেটা থেকে প্যাটার্ন বের করে Smart Learning এ পাঠাও
+    extractPatternsFromData(category, data, path = '') {
+        if (!window.smartLearning) return;
+        
+        const extractRecursive = (obj, currentPath) => {
+            if (typeof obj === 'string') {
+                // স্ট্রিং ডেটা থেকে প্যাটার্ন শিখো
+                if (obj.length > 10 && obj.length < 500) {
+                    window.smartLearning.learnPattern(
+                        currentPath + '_' + category,
+                        obj,
+                        0.8 // উচ্চ রিওয়ার্ড কারণ এটি ভ্যালিডেটেড জ্ঞান
+                    );
+                }
+            } else if (typeof obj === 'object' && obj !== null) {
+                for (const key in obj) {
+                    extractRecursive(obj[key], currentPath ? `${currentPath}.${key}` : key);
+                }
+            }
+        };
+        
+        extractRecursive(data, path);
+    }
+    
+    // Neural Network এর জন্য ডেটা প্রস্তুত করো
+    prepareDataForNeuralNetwork() {
+        const neuralData = {
+            embeddings: {},
+            categories: Object.keys(this.knowledge),
+            metadata: {
+                totalCategories: Object.keys(this.knowledge).length,
+                loadedAt: Date.now()
+            }
+        };
+        
+        // প্রতিটি ক্যাটাগরি থেকে টোকেনাইজড ডেটা তৈরি করো
+        for (const [category, data] of Object.entries(this.knowledge)) {
+            neuralData.embeddings[category] = this.tokenizeForNeuralNet(data, category);
+        }
+        
+        return neuralData;
+    }
+    
+    // Neural Network এর জন্য টোকেনাইজেশন
+    tokenizeForNeuralNet(data, category) {
+        const tokens = [];
+        
+        const tokenizeRecursive = (obj) => {
+            if (typeof obj === 'string') {
+                // স্ট্রিংকে টোকেনে ভাগ করো
+                const words = obj.split(/[\s,.।;:!?()\[\]{}]+/);
+                tokens.push(...words.filter(w => w.length > 2));
+            } else if (typeof obj === 'object' && obj !== null) {
+                for (const key in obj) {
+                    tokens.push(key); // key-ও টোকেন হিসেবে যোগ করো
+                    tokenizeRecursive(obj[key]);
+                }
+            }
+        };
+        
+        tokenizeRecursive(data);
+        return [...new Set(tokens)]; // ইউনিক টোকেন
     }
 
     async loadJSON(path) {
@@ -108,7 +250,7 @@ class NEXUSKnowledgeBase {
 
     detectCategory(query) {
         const patterns = {
-            programming: ['code', 'function', 'python', 'javascript', 'java', ' programming', 'syntax', 'variable', 'array', 'loop', 'algorithm', 'api', 'database', 'html', 'css', 'react', 'node'],
+            programming: ['code', 'function', 'python', 'javascript', 'java', ' programming', 'syntax', 'variable', 'array', 'loop', 'algorithm', 'api', 'database', 'html', 'css', 'react', 'node', 'if else', 'switch', 'for while'],
             languages: ['translate', 'language', 'বাংলায়', 'english', 'translation', 'meaning', 'শব্দ', 'বাক্য'],
             science: ['what is', 'chemistry', 'physics', 'biology', 'atom', 'molecule', 'reaction', 'gravity', 'energy', 'cell', 'DNA', 'evolution'],
             mathematics: ['calculate', 'equation', 'math', 'গণিত', 'algebra', 'geometry', 'calculus', 'number', 'formula', ' summation', 'integration'],
@@ -116,7 +258,19 @@ class NEXUSKnowledgeBase {
             history: ['history', 'ইতিহাস', 'war', 'battle', 'ancient', 'medieval', 'empire', 'king', 'queen', 'revolution'],
             medicine: ['disease', 'treatment', 'medicine', 'symptom', 'hospital', 'doctor', 'patient', 'রোগ', 'ওষুধ', 'চিকিৎসা'],
             law: ['law', 'আইন', 'legal', 'court', 'judge', 'crime', 'rights', 'human rights', 'constitution'],
-            technology: ['ai', 'robot', 'computer', 'internet', 'software', 'hardware', 'app', 'website', 'tech', 'digital']
+            technology: ['ai', 'robot', 'computer', 'internet', 'software', 'hardware', 'app', 'website', 'tech', 'digital'],
+            
+            // নতুন ক্যাটাগরি
+            symbols_and_tokens: ['symbol', 'token', 'operator', 'চিহ্ন', 'টোকেন', '+=', '-=', '==', '!=', '++', '--', '&&', '||'],
+            core_syntax_rules: ['syntax', 'সিনট্যাক্স', 'structure', 'structure', 'grammar', 'rule'],
+            data_types_structures: ['data type', 'string', 'number', 'boolean', 'array', 'object', 'map', 'set', 'ডেটা টাইপ', 'অ্যারে', 'হিস্ট'],
+            reserved_keywords: ['keyword', 'reserved', 'key word', 'কীওয়ার্ড', 'সংরক্ষিত'],
+            advanced_values_symbols: ['value', 'ভ্যালু', 'compound', 'literal', 'constant', 'স্থিরাঙ্ক'],
+            control_flow_graph: ['if', 'else', 'switch', 'case', 'for', 'while', 'loop', 'break', 'continue', 'return', 'try', 'catch', 'লুপ', 'শর্ত'],
+            advanced_conversational_intents: ['emotion', 'feeling', 'angry', 'frustrated', 'confused', 'খারাপ লাগছে', 'বিরক্ত', 'রাগ', 'হতাশ'],
+            universal_domain_knowledge: ['universe', 'world', 'knowledge', 'জ্ঞান', 'বিশ্ব', 'সার্বজনীন'],
+            universal_intelligence: ['intelligence', 'smart', 'brain', 'mind', 'ইন্টেলিজেন্স', 'বুদ্ধি', 'মস্তিষ্ক'],
+            free_dom_infinity: ['freedom', 'infinity', 'free', 'স্বাধীনতা', 'অসীম']
         };
         
         for (const [cat, keywords] of Object.entries(patterns)) {
@@ -1154,6 +1308,95 @@ hello();`,
                     golden_ratio: "φ = (1+√5)/2 ≈ 1.618"
                 }
             }
+        };
+    }
+
+    // ========== নতুন ক্যাটাগরির Fallback Functions ==========
+    
+    getEmbeddedSymbolsTokens() {
+        return {
+            description: "Symbols and Tokens Dictionary - প্রতীক ও টোকেন ডিকশনারি",
+            arithmetic: { plus: "+", minus: "-", multiply: "*", divide: "/", equals: "=", modulo: "%" },
+            comparison: { equal: "==", not_equal: "!=", less: "<", greater: ">", less_equal: "<=", greater_equal: ">=" },
+            logical: { and: "&&", or: "||", not: "!", bitwise_and: "&", bitwise_or: "|" },
+            special: { increment: "++", decrement: "--", plus_equals: "+=", minus_equals: "-=", arrow: "->", null_coalesce: "??" }
+        };
+    }
+    
+    getEmbeddedCoreSyntax() {
+        return {
+            description: "Core Syntax Rules - মূল সিনট্যাক্স নিয়ম",
+            variables: "const, let, var দিয়ে ডিক্লেয়ার করা হয়",
+            functions: "function keyword বা arrow function দিয়ে তৈরি",
+            control_flow: "if, else, switch, for, while, do-while",
+            error_handling: "try, catch, finally, throw"
+        };
+    }
+    
+    getEmbeddedDataTypes() {
+        return {
+            description: "Data Types and Structures Registry - ডেটা টাইপ ও স্ট্রাকচার",
+            primitive: { string: "টেক্সট ডেটা", number: "সংখ্যা", boolean: "true/false", null: "ফাঁকা মান", undefined: "অনির্ধারিত" },
+            complex: { array: "একাধিক ডেটার লিস্ট", object: "key-value জোড়া", map: "key-value স্টোর", set: "ইউনিক ভ্যালু সেট" }
+        };
+    }
+    
+    getEmbeddedReservedKeywords() {
+        return {
+            description: "Reserved Keywords Map - সংরক্ষিত কীওয়ার্ড",
+            javascript: ["var", "let", "const", "function", "class", "if", "else", "for", "while", "return", "try", "catch"],
+            python: ["def", "class", "if", "elif", "else", "for", "while", "return", "try", "except", "import", "from", "as"]
+        };
+    }
+    
+    getEmbeddedAdvancedValues() {
+        return {
+            description: "Advanced Values and Compounded Symbols - অ্যাডভান্সড ভ্যালু ও সিম্বল",
+            number_11: { value: "11", purpose: "Loop counters, array indexing" },
+            number_251: { value: "251", purpose: "8-bit boundary, color constants" },
+            plus_equals: { operator: "+=", description: "Addition assignment" },
+            minus_equals: { operator: "-=", description: "Subtraction assignment" }
+        };
+    }
+    
+    getEmbeddedControlFlow() {
+        return {
+            description: "Control Flow and Execution Graph - কন্ট্রোল ফ্লো ও এক্সিকিউশন গ্রাফ",
+            branching: { if_else: "Conditional branching", switch_case: "Multi-way selection" },
+            loops: { for_loop: "Fixed iteration", while_loop: "Condition-based iteration", do_while: "Post-condition loop" },
+            jumps: { break: "Exit loop", continue: "Skip iteration", return: "Exit function" }
+        };
+    }
+    
+    getEmbeddedConversationalIntents() {
+        return {
+            description: "Advanced Conversational Intents and Psychology - অ্যাডভান্সড কথোপকথন ইন্টেন্ট",
+            frustration: { patterns: ["কাজ করছে না", "বাজে সার্ভিস"], response: "সমস্যা সমাধানে সাহায্য করুন" },
+            confusion: { patterns: ["বুঝতে পারছি না", "কোনটা করবো"], response: "সহজ ভাষায় ব্যাখ্যা করুন" },
+            direct_task: { patterns: ["সরাসরি কাজ", "এখনই করো"], response: "কোনো কুশল বিনিময় ছাড়াই সরাসরি উত্তর দিন" }
+        };
+    }
+    
+    getEmbeddedUniversalDomain() {
+        return {
+            description: "Universal Domain Knowledge Base - সার্বজনীন ডোমেইন জ্ঞান",
+            domains: ["বিজ্ঞান", "গণিত", "প্রযুক্তি", "সাহিত্য", "ইতিহাস", "ভূগোল", "রাজনীতি", "অর্থনীতি"]
+        };
+    }
+    
+    getEmbeddedUniversalIntelligence() {
+        return {
+            description: "Universal Human and System Intelligence - সার্বজনীন মানব ও সিস্টেম ইন্টেলিজেন্স",
+            cognitive: { reasoning: "যুক্তি", problem_solving: "সমস্যা সমাধান", learning: "শেখা" },
+            emotional: { empathy: "সহানুভূতি", self_awareness: "আত্মসচেতনতা", adaptation: "অভিযোজন" }
+        };
+    }
+    
+    getEmbeddedFreeDomInfinity() {
+        return {
+            description: "Free Dom Infinity - ফ্রিডম ইনফিনিটি",
+            concept: "অসীম স্বাধীনতা ও সম্ভাবনা",
+            values: ["নিরাপত্তা", "গোপনীয়তা", "স্বচ্ছতা", "সহযোগিতা"]
         };
     }
 

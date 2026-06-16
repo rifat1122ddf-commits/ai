@@ -45,13 +45,18 @@ class SmartLearningSystem {
         this.innerLoopSteps = 5;
         this.outerLoopSteps = 100;
         
+        // Knowledge Base Integration
+        this.knowledgeBase = null;
+        this.knowledgePatterns = new Map();
+        
         // Statistics
         this.stats = {
             totalUpdates: 0,
             improvements: 0,
             degradations: 0,
             patternsLearned: 0,
-            anomaliesDetected: 0
+            anomaliesDetected: 0,
+            knowledgePatternsLoaded: 0
         };
         
         this.initialize();
@@ -60,6 +65,97 @@ class SmartLearningSystem {
     initialize() {
         console.log('[Smart Learning] System initialized');
         this.loadFromStorage();
+        this.connectToKnowledgeBase();
+    }
+    
+    // Knowledge Base এ কানেক্ট করা
+    connectToKnowledgeBase() {
+        // Knowledge Base লোড হওয়ার জন্য অপেক্ষা করো
+        const checkKnowledgeBase = () => {
+            if (window.nexusKnowledge && window.nexusKnowledge.initialized) {
+                this.knowledgeBase = window.nexusKnowledge;
+                this.loadPatternsFromKnowledgeBase();
+                console.log('[Smart Learning] ✅ Knowledge Base এ কানেক্টেড');
+            } else {
+                setTimeout(checkKnowledgeBase, 100);
+            }
+        };
+        
+        checkKnowledgeBase();
+    }
+    
+    // Knowledge Base থেকে প্যাটার্ন লোড করা
+    loadPatternsFromKnowledgeBase() {
+        if (!this.knowledgeBase || !this.knowledgeBase.knowledge) return;
+        
+        console.log('[Smart Learning] 📚 Knowledge Base থেকে প্যাটার্ন লোড হচ্ছে...');
+        
+        for (const [category, data] of Object.entries(this.knowledgeBase.knowledge)) {
+            if (data && typeof data === 'object') {
+                this.extractPatternsRecursive(category, data, '');
+            }
+        }
+        
+        console.log(`[Smart Learning] ✅ ${this.stats.knowledgePatternsLoaded} টি জ্ঞান-ভিত্তিক প্যাটার্ন লোড হয়েছে`);
+    }
+    
+    // রিকার্সিভলি প্যাটার্ন বের করা
+    extractPatternsRecursive(category, obj, path) {
+        if (typeof obj === 'string') {
+            // স্ট্রিং থেকে প্যাটার্ন তৈরি
+            if (obj.length > 5 && obj.length < 500) {
+                const patternKey = this.hashPattern(path + '_' + category);
+                this.knowledgePatterns.set(patternKey, {
+                    input: path,
+                    output: obj,
+                    category: category,
+                    confidence: 0.9, // Knowledge Base থেকে তাই উচ্চ confidence
+                    source: 'knowledge_base'
+                });
+                this.stats.knowledgePatternsLoaded++;
+            }
+        } else if (typeof obj === 'object' && obj !== null) {
+            for (const key in obj) {
+                this.extractPatternsRecursive(
+                    category, 
+                    obj[key], 
+                    path ? `${path}.${key}` : key
+                );
+            }
+        }
+    }
+    
+    // Knowledge Base থেকে প্রাসঙ্গিক প্যাটার্ন খুঁজে বের করা
+    findPatternFromKnowledge(input) {
+        const inputLower = input.toLowerCase();
+        
+        // সব Knowledge Pattern এ খুঁজো
+        for (const [key, pattern] of this.knowledgePatterns) {
+            if (inputLower.includes(pattern.input.toLowerCase()) || 
+                pattern.input.toLowerCase().includes(inputLower)) {
+                return {
+                    found: true,
+                    pattern: pattern,
+                    confidence: pattern.confidence,
+                    source: 'knowledge_base'
+                };
+            }
+        }
+        
+        return { found: false };
+    }
+    
+    // Knowledge Base থেকে সার্চ করা
+    searchKnowledgeBase(query) {
+        if (!this.knowledgeBase) return [];
+        
+        try {
+            const results = this.knowledgeBase.search(query);
+            return results || [];
+        } catch (e) {
+            console.error('[Smart Learning] Knowledge Base সার্চ এরর:', e);
+            return [];
+        }
     }
 
     // ==================== ADAPTIVE LEARNING RATE ====================
@@ -211,8 +307,15 @@ class SmartLearningSystem {
             return {
                 found: true,
                 pattern,
-                confidence: pattern.confidence
+                confidence: pattern.confidence,
+                source: 'learned'
             };
+        }
+        
+        // প্রথমে Knowledge Base থেকে খুঁজো (এটি সরাসরি ডাটা দিচ্ছি তাই)
+        const knowledgeMatch = this.findPatternFromKnowledge(input);
+        if (knowledgeMatch.found) {
+            return knowledgeMatch;
         }
         
         // Try partial matching
@@ -224,6 +327,7 @@ class SmartLearningSystem {
         let bestMatch = null;
         let bestScore = 0;
         
+        // Learned patterns থেকে খুঁজো
         for (const [key, pattern] of this.patterns) {
             const score = this.calculateSimilarity(input, pattern.input);
             if (score > bestScore && score > 0.7) {
@@ -232,10 +336,20 @@ class SmartLearningSystem {
             }
         }
         
+        // Knowledge Base patterns থেকেও খুঁজো
+        for (const [key, pattern] of this.knowledgePatterns) {
+            const score = this.calculateSimilarity(input, pattern.input);
+            if (score > bestScore && score > 0.5) { // Knowledge Base এ lower threshold
+                bestScore = score;
+                bestMatch = pattern;
+            }
+        }
+        
         return {
             found: bestMatch !== null,
             pattern: bestMatch,
-            confidence: bestScore
+            confidence: bestScore,
+            source: bestMatch?.source || 'similarity'
         };
     }
 
@@ -483,6 +597,7 @@ class SmartLearningSystem {
             ...this.stats,
             learningRate: this.learningRate,
             patternsCount: this.patterns.size,
+            knowledgePatternsCount: this.knowledgePatterns.size,
             bufferSize: this.replayBuffer.length,
             averageLoss: this.lossHistory.length > 0 ? 
                 this.lossHistory.reduce((a, b) => a + b, 0) / this.lossHistory.length : 0
