@@ -1,5 +1,6 @@
 /**
  * NEXUS AI - Main Entry Point
+ * ⚡ চোখের পলকে - No Heavy Models
  * সব সিস্টেম কানেক্ট করে একটি শক্তিশালী AI সহকারী তৈরি
  */
 
@@ -13,7 +14,14 @@ class NEXUS {
         this.smartRemind = null;
         this.objectDetection = null;
         this.transactionPipeline = null;
-        this.knowledgeBase = null; // নতুন যোগ
+        this.knowledgeBase = null;
+        
+        // ⚡ NEW LIGHT SYSTEMS
+        this.brain = null;           // 🧠 Brain Integration
+        this.cache = null;            // 📦 Light Cache
+        this.scraper = null;         // 🌐 Web Scraper
+        this.autoUpdate = null;       // 🔄 Auto Update
+        this.search = null;          // 🔍 Smart Search
         
         // State
         this.isInitialized = false;
@@ -22,7 +30,7 @@ class NEXUS {
         
         // Configuration
         this.config = {
-            // API Settings
+            // API Settings (Optional - এখন লাগবে না!)
             apiKey: null,
             apiUrl: 'https://generativelanguage.googleapis.com/v1beta/models/gemini-2.0-flash:generateContent',
             model: 'gemini-2.0-flash',
@@ -40,7 +48,12 @@ class NEXUS {
             autoStart: true,
             smartLearning: true,
             objectDetection: true,
-            transactionPipeline: true
+            transactionPipeline: true,
+            
+            // ⚡ Light Mode Settings
+            lightMode: true,           // No Heavy Models
+            useCache: true,            // Cache ব্যবহার করো
+            autoUpdateEnabled: true     // অটো আপডেট চালু
         };
         
         // History
@@ -68,6 +81,9 @@ class NEXUS {
         this.loadSettings();
         
         try {
+            // ⚡ Initialize LIGHT SYSTEMS FIRST (এগুলো দ্রুত)
+            this.initLightSystems();
+            
             // Initialize Neural Network Core
             await this.initNeuralNetwork();
             
@@ -89,8 +105,10 @@ class NEXUS {
             // Initialize Transaction Pipeline
             this.initTransactionPipeline();
             
-            // Initialize AI Core
-            this.initAICore();
+            // Initialize AI Core (Optional - এখন লাগবে না)
+            if (this.config.apiKey) {
+                this.initAICore();
+            }
             
             this.isInitialized = true;
             
@@ -102,7 +120,8 @@ class NEXUS {
             // Emit init event
             this.emit('onInit', { success: true });
             
-            console.log('[NEXUS] Initialization complete');
+            console.log('[NEXUS] ✅ Initialization complete - LIGHT MODE!');
+            console.log('[NEXUS] ⚡ স্পিড: চোখের পলকে!');
             console.log('[NEXUS] 📊 জ্ঞান বিভাগ:', window.nexusKnowledge ? Object.keys(window.nexusKnowledge.knowledge || {}).length : 0);
             return true;
             
@@ -111,6 +130,46 @@ class NEXUS {
             this.emit('onError', { type: 'init', error });
             return false;
         }
+    }
+    
+    // ⚡ LIGHT SYSTEMS INITIALIZATION
+    initLightSystems() {
+        console.log('[NEXUS] ⚡ Initializing Light Systems...');
+        
+        // Cache
+        if (window.nexusCache) {
+            this.cache = window.nexusCache;
+            console.log('[NEXUS] ✅ Cache connected');
+        }
+        
+        // Scraper
+        if (window.nexusScraper) {
+            this.scraper = window.nexusScraper;
+            console.log('[NEXUS] ✅ Scraper connected');
+        }
+        
+        // Search
+        if (window.nexusSearch) {
+            this.search = window.nexusSearch;
+            console.log('[NEXUS] ✅ Search connected');
+        }
+        
+        // Auto Update
+        if (window.nexusAutoUpdate) {
+            this.autoUpdate = window.nexusAutoUpdate;
+            if (this.config.autoUpdateEnabled) {
+                this.autoUpdate.start();
+            }
+            console.log('[NEXUS] ✅ Auto Update connected');
+        }
+        
+        // Brain
+        if (window.nexusBrain) {
+            this.brain = window.nexusBrain;
+            console.log('[NEXUS] ✅ Brain connected');
+        }
+        
+        console.log('[NEXUS] ⚡ Light Systems Ready!');
     }
     
     initKnowledgeBase() {
@@ -297,21 +356,19 @@ class NEXUS {
             // Add to conversation history
             this.addToHistory('user', input);
             
-            // Process through transaction pipeline
-            const result = await this.transactionPipeline.process({
-                input,
-                timestamp: Date.now(),
-                history: this.conversationHistory
-            });
-            
-            // Get AI response
+            // Get AI response - ⚡ প্রায়োরিটি অনুযায়ী
             let response;
             
-            if (this.aiCore && this.config.apiKey) {
-                // Use AI Core
+            // ১. ⚡ Brain ব্যবহার করো (সবচেয়ে দ্রুত)
+            if (this.brain && this.brain.ready) {
+                response = await this.brain.think(input);
+            }
+            // ২. API ব্যবহার করো (যদি কী থাকে)
+            else if (this.aiCore && this.config.apiKey) {
                 response = await this.aiCore.generateResponse(input, this.getContext());
-            } else {
-                // Fallback to smart response
+            }
+            // ৩. Smart Response (ফলব্যাক)
+            else {
                 response = this.generateSmartResponse(input);
             }
             
@@ -337,31 +394,40 @@ class NEXUS {
         }
     }
 
+    // ⚡ Smart Response Generator (চোখের পলকে)
     generateSmartResponse(input) {
-        // Pattern matching response generation
         const lowerInput = input.toLowerCase();
         
         // Time queries
-        if (lowerInput.includes('সময়') || lowerInput.includes('time')) {
-            return `এখন সময় ${new Date().toLocaleTimeString('bn-BD')}`;
+        if (lowerInput.includes('সময়') || lowerInput.includes('time') || lowerInput.includes('কতটা')) {
+            return `⏰ এখন সময়: ${new Date().toLocaleTimeString('bn-BD')}`;
         }
         
         // Date queries
-        if (lowerInput.includes('তারিখ') || lowerInput.includes('date')) {
-            return `আজ ${new Date().toLocaleDateString('bn-BD', { weekday: 'long', year: 'numeric', month: 'long', day: 'numeric' })}`;
+        if (lowerInput.includes('তারিখ') || lowerInput.includes('date') || lowerInput.includes('কোন দিন')) {
+            return `📅 আজ: ${new Date().toLocaleDateString('bn-BD', { weekday: 'long', year: 'numeric', month: 'long', day: 'numeric' })}`;
         }
         
         // Greetings
-        if (lowerInput.includes('হ্যালো') || lowerInput.includes('আসসালাম') || lowerInput.includes('hello')) {
-            return 'হ্যালো! কেমন আছো? আমি তোমার সহকারী।';
+        if (lowerInput.includes('হ্যালো') || lowerInput.includes('আসসালাম') || lowerInput.includes('hello') || lowerInput.includes('হাই')) {
+            return '👋 হ্যালো! আমি নেক্সাস। কেমন আছেন? কিভাবে সাহায্য করতে পারি? 🤖';
+        }
+        
+        // Weather
+        if (lowerInput.includes('আবহাওয়া') || lowerInput.includes('weather') || lowerInput.includes('বৃষ্টি')) {
+            const weather = this.cache?.getTagged('weather', 'Dhaka');
+            if (weather) {
+                return `🌤️ আবহাওয়া: ${weather.city}\n🌡️ তাপমাত্রা: ${weather.temp_C}°C\n💧 আর্দ্রতা: ${weather.humidity}%\n☁️ ${weather.condition}`;
+            }
+            return '🌤️ আবহাওয়া লোড হচ্ছে...';
         }
         
         // Help
-        if (lowerInput.includes('সাহায্য') || lowerInput.includes('help')) {
-            return 'আমি তোমার সহকারী। বলো কি করতে হবে। আমি মাউস ক্লিক, কিবোর্ড, ফাইল কাজ, সার্চ, রিমাইন্ডার সেট করা - সব করতে পারি!';
+        if (lowerInput.includes('সাহায্য') || lowerInput.includes('help') || lowerInput.includes('কি কর')) {
+            return `🤖 আমি নেক্সাস! আমি করতে পারি:\n\n🌤️ আবহাওয়া জানাতে\n📰 সংবাদ দেখাতে\n₿ ক্রিপ্টো দাম বলতে\n📚 যেকোনো বিষয়ে জানাতে\n💻 কোডিং সাহায্য করতে\n\nবলুন কি জানতে চান!`;
         }
         
-        // Knowledge Base সার্চ করা (সরাসরি ডাটা দিচ্ছি)
+        // Knowledge Base সার্চ করা
         if (this.knowledgeBase) {
             const kbResults = this.knowledgeBase.search(input);
             if (kbResults && kbResults.length > 0) {
@@ -373,12 +439,12 @@ class NEXUS {
         if (window.NEXUSCore && window.NEXUSCore.embeddings) {
             const context = window.NEXUSCore.getContextEmbedding(input);
             if (context.score > 0.1) {
-                console.log(`[NEXUS] Context detected: ${context.category} (score: ${context.score.toFixed(3)})`);
+                console.log(`[NEXUS] Context: ${context.category} (${context.score.toFixed(3)})`);
             }
         }
         
         // Default
-        return 'আমি বুঝতে পেরেছি। তুমি কি করতে চাও?';
+        return 'আমি বুঝতে পেরেছি। বলুন কি জানতে চান? 😊';
     }
 
     evaluateResponse(response) {
