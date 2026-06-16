@@ -34,7 +34,8 @@ class NEXUSKnowledgeBase {
             'conversation',     // কথোপকথন
             
             // নতুন যোগ করা ক্যাটাগরি
-            'symbols_and_tokens',           // টোকেন ও সিম্বল ডিকশনারি
+            'symbols_and_tokens',           // টোকেন ও সিম্বল ডিকশনারি (পার্ট ১)
+            'symbols_tokens_part_two',      // টোকেন ও সিম্বল ডিকশনারি (পার্ট ২)
             'core_syntax_rules',            // কোর সিনট্যাক্স রুলস
             'data_types_structures',        // ডেটা টাইপ ও স্ট্রাকচার
             'reserved_keywords',            // রিজার্ভড কীওয়ার্ড
@@ -68,6 +69,7 @@ class NEXUSKnowledgeBase {
                 
                 // নতুন যোগ করা ডেটা ফাইল
                 symbols_and_tokens: await this.loadJSON('knowledge/data/symbols_and_tokens_dictionary.json'),
+                symbols_tokens_part_two: await this.loadJSON('knowledge/data/1symbols_and_tokens_dictionary.json'),
                 core_syntax_rules: await this.loadJSON('knowledge/data/core_syntax_rules.json'),
                 data_types_structures: await this.loadJSON('knowledge/data/data_types_and_structures_registry.json'),
                 reserved_keywords: await this.loadJSON('knowledge/data/reserved_keywords_map.json'),
@@ -94,6 +96,7 @@ class NEXUSKnowledgeBase {
                 
                 // নতুন ক্যাটাগরির জন্য ফলব্যাক
                 symbols_and_tokens: this.getEmbeddedSymbolsTokens(),
+                symbols_tokens_part_two: this.getEmbeddedSymbolsTokensPartTwo(),
                 core_syntax_rules: this.getEmbeddedCoreSyntax(),
                 data_types_structures: this.getEmbeddedDataTypes(),
                 reserved_keywords: this.getEmbeddedReservedKeywords(),
@@ -262,6 +265,7 @@ class NEXUSKnowledgeBase {
             
             // নতুন ক্যাটাগরি
             symbols_and_tokens: ['symbol', 'token', 'operator', 'চিহ্ন', 'টোকেন', '+=', '-=', '==', '!=', '++', '--', '&&', '||'],
+            symbols_tokens_part_two: ['plus', 'minus', 'division', 'colon', 'comma', 'underscore', 'numeric', 'literal', '0', '1', '2', '3', '4', '5', '6', '7', '8', '9'],
             core_syntax_rules: ['syntax', 'সিনট্যাক্স', 'structure', 'structure', 'grammar', 'rule'],
             data_types_structures: ['data type', 'string', 'number', 'boolean', 'array', 'object', 'map', 'set', 'ডেটা টাইপ', 'অ্যারে', 'হিস্ট'],
             reserved_keywords: ['keyword', 'reserved', 'key word', 'কীওয়ার্ড', 'সংরক্ষিত'],
@@ -1320,6 +1324,34 @@ hello();`,
             comparison: { equal: "==", not_equal: "!=", less: "<", greater: ">", less_equal: "<=", greater_equal: ">=" },
             logical: { and: "&&", or: "||", not: "!", bitwise_and: "&", bitwise_or: "|" },
             special: { increment: "++", decrement: "--", plus_equals: "+=", minus_equals: "-=", arrow: "->", null_coalesce: "??" }
+        };
+    }
+    
+    getEmbeddedSymbolsTokensPartTwo() {
+        return {
+            description: "Symbols and Tokens Dictionary Part 2 - অ্যাডভান্সড অপারেটর ও নিউমেরিক লিটারাল",
+            additional_symbolic_lexicon: {
+                plus_symbol: { character: "+", name: "Plus / Addition", bangla: "যোগ চিহ্ন" },
+                minus_symbol: { character: "-", name: "Minus / Subtraction", bangla: "বিয়োগ চিহ্ন" },
+                forward_slash: { character: "/", name: "Division", bangla: "ভাগ অপারেটর" },
+                colon_symbol: { character: ":", name: "Colon", bangla: "কোলন" },
+                comma_separator: { character: ",", name: "Comma", bangla: "কমা" },
+                underscore_symbol: { character: "_", name: "Underscore", bangla: "আন্ডারস্কোর" },
+                less_than: { character: "<", name: "Less Than", bangla: "ছোট" },
+                greater_than: { character: ">", name: "Greater Than", bangla: "বড়" }
+            },
+            universal_numeric_literals: {
+                "0": "Zero - শূন্য",
+                "1": "One - এক",
+                "2": "Two - দুই",
+                "3": "Three - তিন",
+                "4": "Four - চার",
+                "5": "Five - পাঁচ",
+                "6": "Six - ছয়",
+                "7": "Seven - সাত",
+                "8": "Eight - আট",
+                "9": "Nine - নয়"
+            }
         };
     }
     
