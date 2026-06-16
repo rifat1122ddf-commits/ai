@@ -13,6 +13,7 @@ class NEXUS {
         this.smartRemind = null;
         this.objectDetection = null;
         this.transactionPipeline = null;
+        this.knowledgeBase = null; // নতুন যোগ
         
         // State
         this.isInitialized = false;
@@ -70,6 +71,9 @@ class NEXUS {
             // Initialize Neural Network Core
             await this.initNeuralNetwork();
             
+            // Initialize Knowledge Base (JSON ফাইল লোড করা)
+            this.initKnowledgeBase();
+            
             // Initialize Smart Learning
             this.initSmartLearning();
             
@@ -99,6 +103,7 @@ class NEXUS {
             this.emit('onInit', { success: true });
             
             console.log('[NEXUS] Initialization complete');
+            console.log('[NEXUS] 📊 জ্ঞান বিভাগ:', window.nexusKnowledge ? Object.keys(window.nexusKnowledge.knowledge || {}).length : 0);
             return true;
             
         } catch (error) {
@@ -106,6 +111,23 @@ class NEXUS {
             this.emit('onError', { type: 'init', error });
             return false;
         }
+    }
+    
+    initKnowledgeBase() {
+        console.log('[NEXUS] Initializing Knowledge Base...');
+        
+        // Knowledge Base লোড হওয়ার জন্য অপেক্ষা করো
+        const checkKnowledgeBase = () => {
+            if (window.nexusKnowledge && window.nexusKnowledge.initialized) {
+                this.knowledgeBase = window.nexusKnowledge;
+                console.log('[NEXUS] ✅ Knowledge Base ready');
+                console.log('[NEXUS] 📚 মোট ক্যাটাগরি:', Object.keys(this.knowledgeBase.knowledge || {}).length);
+            } else {
+                setTimeout(checkKnowledgeBase, 50);
+            }
+        };
+        
+        checkKnowledgeBase();
     }
 
     initNeuralNetwork() {
@@ -337,6 +359,22 @@ class NEXUS {
         // Help
         if (lowerInput.includes('সাহায্য') || lowerInput.includes('help')) {
             return 'আমি তোমার সহকারী। বলো কি করতে হবে। আমি মাউস ক্লিক, কিবোর্ড, ফাইল কাজ, সার্চ, রিমাইন্ডার সেট করা - সব করতে পারি!';
+        }
+        
+        // Knowledge Base সার্চ করা (সরাসরি ডাটা দিচ্ছি)
+        if (this.knowledgeBase) {
+            const kbResults = this.knowledgeBase.search(input);
+            if (kbResults && kbResults.length > 0) {
+                return kbResults[0];
+            }
+        }
+        
+        // Neural Network Context
+        if (window.NEXUSCore && window.NEXUSCore.embeddings) {
+            const context = window.NEXUSCore.getContextEmbedding(input);
+            if (context.score > 0.1) {
+                console.log(`[NEXUS] Context detected: ${context.category} (score: ${context.score.toFixed(3)})`);
+            }
         }
         
         // Default
